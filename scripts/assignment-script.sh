@@ -1,79 +1,79 @@
 # make a directory for the DNA-seq analysis within the ngs_pipeline folder
-$ mkdir ngs_pipeline
-$ mkdir ngs_pipeline/dnaseq
+mkdir ngs_pipeline
+mkdir ngs_pipeline/dnaseq
 
 # change into dnaseq folder then create four directories “data”, “results”, “logs”, “scripts” 
-$ cd ngs_pipeline/dnaseq
-$ mkdir data results logs scripts
+cd ngs_pipeline/dnaseq
+mkdir data results logs scripts
 
 # verify that directories are created
-$ ls -lF 
+ls -lF 
 
 # create two subdirectories to store untrimmed reads and trimmed reads 
-$ cd ~/ngs_pipeline/dnaseq/data
-$ mkdir untrimmed_fastq
-$ mkdir trimmed_fastq
+cd ~/ngs_pipeline/dnaseq/data
+mkdir untrimmed_fastq
+mkdir trimmed_fastq
 
 # 2.1 download raw fastq data read 1, read 2 and annotation file
-$ wget https://s3-eu-west-1.amazonaws.com/workshopdata2017/NGS0001.R1.fastq.qz
-$ wget https://s3-eu-west-1.amazonaws.com/workshopdata2017/NGS0001.R2.fastq.qz
-$ wget https://s3-eu-west-1.amazonaws.com/workshopdata2017/annotation.bed
+wget https://s3-eu-west-1.amazonaws.com/workshopdata2017/NGS0001.R1.fastq.qz
+wget https://s3-eu-west-1.amazonaws.com/workshopdata2017/NGS0001.R2.fastq.qz
+wget https://s3-eu-west-1.amazonaws.com/workshopdata2017/annotation.bed
 
 # copy raw fastq files to untrimmed directory and bed file to data directory
-$ mv *.fastq.qz ~/ngs_pipeline/dnaseq/data/untrimmed_fastq/
-$ mv annotation.bed ~/ngs_pipeline/dnaseq/data
+mv *.fastq.qz ~/ngs_pipeline/dnaseq/data/untrimmed_fastq/
+mv annotation.bed ~/ngs_pipeline/dnaseq/data
 
 # 2.1 download reference files to map against when perform alignment, copy into data directory
-$ wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz
-$ mv hg19.fa.gz ~/ngs_pipeline/dnaseq/data
+wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz
+mv hg19.fa.gz ~/ngs_pipeline/dnaseq/data
 
 # create a README.md text file with relevant information about the ngs_pipeline project
-$ cd ~/ngs_pipeline/dnaseq/scripts
-$ touch README.md 
+cd ~/ngs_pipeline/dnaseq/scripts
+touch README.md 
 
 # 2.1 install Anaconda on Openstack instance and use it to install Trimmomatic, Fastqc, Samtools, Picard, Bedtools, BWA, Freebayes 
-$ wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
-$ chmod +x ./Anaconda3-2022.10-Linux-x86_64.sh
-$ bash ./Anaconda3-2022.10-Linux-x86_64.sh
-$ source ~/.bashrc
+wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
+chmod +x ./Anaconda3-2022.10-Linux-x86_64.sh
+bash ./Anaconda3-2022.10-Linux-x86_64.sh
+source ~/.bashrc
 
-$ conda config --add channels defaults
-$ conda config --add channels bioconda
-$ conda config --add channels conda-forge
-$ conda config --add channels miniconda
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda config --add channels miniconda
 
-$ conda install samtools
-$ conda install bwa
-$ conda install freebayes
-$ conda install picard
-$ conda install bedtools
-$ conda install trimmomatic
-$ conda install fastqc
-$ sudo apt install libvcflib-tools 
+conda install samtools
+conda install bwa
+conda install freebayes
+conda install picard
+conda install bedtools
+conda install trimmomatic
+conda install fastqc
+sudo apt install libvcflib-tools 
 
 # uncompress R1 and R2 fastq files
-$ zcat NGS0001.R1.fastq.qz > NGS0001.R1.fastq
-$ zcat NGS0001.R2.fastq.qz > NGS0001.R2.fastq
+zcat NGS0001.R1.fastq.qz > NGS0001.R1.fastq
+zcat NGS0001.R2.fastq.qz > NGS0001.R2.fastq
 
 # 2.2 perform quality assessment and trimming 
-$ fastqc -t 4 *.fastq 
+fastqc -t 4 *.fastq 
 
 # make directory and move fastqc to results of untrimmed reads 
-$ mkdir ~/ngs_pipeline/dnaseq/results/fastqc_untrimmed_reads
-$ mv *fastqc* ~/ngs_pipeline/dnaseq/results/fastqc_untrimmed_reads/
+mkdir ~/ngs_pipeline/dnaseq/results/fastqc_untrimmed_reads
+mv *fastqc* ~/ngs_pipeline/dnaseq/results/fastqc_untrimmed_reads/
 
 # unzip the output of FastQC 
-$ cd ~/ngs_pipeline/dnaseq/results/fastqc_untrimmed_reads/
-$ for zip in *.zip
+cd ~/ngs_pipeline/dnaseq/results/fastqc_untrimmed_reads/
+for zip in *.zip
 > do
 > unzip $zip
 > done
 
 # save a record and cat all fastqc summary.txt files into one and move to logs
-$ cat */summary.txt > ~/ngs_pipeline/dnaseq/logs/fastqc_summaries.txt 
+cat */summary.txt > ~/ngs_pipeline/dnaseq/logs/fastqc_summaries.txt 
 
 # 2.2 trimming for paired-end fastq files
-$ trimmomatic PE \
+trimmomatic PE \
 -threads 4 \
 -phred33 \
 ~/ngs_pipeline/dnaseq/data/untrimmed_fastq/NGS0001.R1.fastq \
@@ -83,101 +83,102 @@ ILLUMINACLIP:~/anaconda3/pkgs/trimmomatic-0.39-hdfd78af_2/share/trimmomatic-0.39
 TRAILING:25 MINLEN:50
 
 # create a folder for the reference (to build reference index)
-$ mkdir -p ~/ngs_pipeline/dnaseq/data/reference
-$ mv ~/ngs_pipeline/dnaseq/data/hg19.fa.gz ~/ngs_pipeline/dnaseq/data/reference/
+mkdir -p ~/ngs_pipeline/dnaseq/data/reference
+mv ~/ngs_pipeline/dnaseq/data/hg19.fa.gz ~/ngs_pipeline/dnaseq/data/reference/
 
 # 2.3 run bwa to generate index files
-$ bwa index ~/ngs_pipeline/dnaseq/data/reference/hg19.fa.gz
+bwa index ~/ngs_pipeline/dnaseq/data/reference/hg19.fa.gz
 
 # list files generated by bwa index
-$ ls -lh 
+ls -lh 
 
 # create a folder to store aligned data
-$ mkdir ~/ngs_pipeline/dnaseq/data/aligned_data
+mkdir ~/ngs_pipeline/dnaseq/data/aligned_data
 
 # 2.3 run bwa mem with Read Group information
-$ bwa mem -t 4 -v 1 -R '@RG\tID:HWI-D0011.50.H7AP8ADXX.1.WES01\tSM:WES01\tPL:ILLUMINA\tLB:nextera-wes01-blood\tDT:2017-02-23\tPU:HWI-D00119' -I 250,50  ~/ngs_pipeline/dnaseq/data/reference/hg19.fa.gz ~/ngs_pipeline/dnaseq/data/trimmed_fastq/NGS0001.trimmed_R_1P ~/ngs_pipeline/dnaseq/data/trimmed_fastq/NGS0001.trimmed_R_2P > ~/ngs_pipeline/dnaseq/data/aligned_data/NGS0001.sam
+bwa mem -t 4 -v 1 -R '@RG\tID:HWI-D0011.50.H7AP8ADXX.1.WES01\tSM:WES01\tPL:ILLUMINA\tLB:nextera-wes01-blood\tDT:2017-02-23\tPU:HWI-D00119' -I 250,50  ~/ngs_pipeline/dnaseq/data/reference/hg19.fa.gz ~/ngs_pipeline/dnaseq/data/trimmed_fastq/NGS0001.trimmed_R_1P ~/ngs_pipeline/dnaseq/data/trimmed_fastq/NGS0001.trimmed_R_2P > ~/ngs_pipeline/dnaseq/data/aligned_data/NGS0001.sam
 
 # convert sam file into bam format, sort it, generate an index using samtools  
-$ cd ~/ngs_pipeline/dnaseq/data/aligned_data
-$ samtools view -h -b NGS0001.sam > NGS0001.bam
-$ samtools sort NGS0001.bam > NGS0001_sorted.bam
-$ samtools index NGS0001_sorted.bam
-$ ls
+cd ~/ngs_pipeline/dnaseq/data/aligned_data
+samtools view -h -b NGS0001.sam > NGS0001.bam
+samtools sort NGS0001.bam > NGS0001_sorted.bam
+samtools index NGS0001_sorted.bam
+ls
 
 # mark duplicates with picard
-$ picard MarkDuplicates I=NGS0001_sorted.bam O=NGS0001_sorted_marked.bam M=marked_dup_metrics.txt
-$ samtools index NGS0001_sorted_marked.bam
+picard MarkDuplicates I=NGS0001_sorted.bam O=NGS0001_sorted_marked.bam M=marked_dup_metrics.txt
+samtools index NGS0001_sorted_marked.bam
 
 # filter BAM based on mapping quality and bitwise flags using samtools 
-$ samtools view -F 1796 -q 20 -o NGS0001_sorted_filtered.bam NGS0001_sorted_marked.bam
-$ samtools index NGS0001_sorted_filtered.bam
+samtools view -F 1796 -q 20 -o NGS0001_sorted_filtered.bam NGS0001_sorted_marked.bam
+samtools index NGS0001_sorted_filtered.bam
 
 # generate flagstats using samtools 
-$ samtools flagstat NGS0001_sorted_filtered.bam
+samtools flagstat NGS0001_sorted_filtered.bam
 
 # 2.3 generate idxstats using samtools 
-$ samtools idxstats NGS0001_sorted_filtered.bam
+samtools idxstats NGS0001_sorted_filtered.bam
 
 # determine depth of coverage using bedtools 
-$ bedtools genomecov -ibam NGS0001_sorted_filtered.bam -bg | head
+bedtools genomecov -ibam NGS0001_sorted_filtered.bam -bg | head
 
 # 2.3 determine insert size using picard
-$ picard CollectInsertSizeMetrics I=NGS0001_sorted_filtered.bam O=insert_size_metrics.txt H=insert_size_histogram.pdf M=0.5
+picard CollectInsertSizeMetrics I=NGS0001_sorted_filtered.bam O=insert_size_metrics.txt H=insert_size_histogram.pdf M=0.5
 
 # 2.4 call variants using Freebayes 
-$ cd ~/ngs_pipeline/dnaseq/data/reference/
-$ zcat ~/ngs_pipeline/dnaseq/data/reference/hg19.fa.gz > ~/ngs_pipeline/dnaseq/data/reference/hg19.fa
-$ samtools faidx ~/ngs_pipeline/dnaseq/data/reference/hg19.fa
-$ freebayes --bam ~/ngs_pipeline/dnaseq/data/aligned_data/NGS0001_sorted_filtered.bam --fasta-reference ~/ngs_pipeline/dnaseq/data/reference/hg19.fa --vcf ~/ngs_pipeline/dnaseq/results/NGS0001.vcf
-$ bgzip ~/ngs_pipeline/dnaseq/results/NGS0001.vcf
-$ tabix -p vcf ~/ngs_pipeline/dnaseq/results/NGS0001.vcf.gz
+cd ~/ngs_pipeline/dnaseq/data/reference/
+zcat ~/ngs_pipeline/dnaseq/data/reference/hg19.fa.gz > ~/ngs_pipeline/dnaseq/data/reference/hg19.fa
+samtools faidx ~/ngs_pipeline/dnaseq/data/reference/hg19.fa
+freebayes --bam ~/ngs_pipeline/dnaseq/data/aligned_data/NGS0001_sorted_filtered.bam --fasta-reference ~/ngs_pipeline/dnaseq/data/reference/hg19.fa --vcf ~/ngs_pipeline/dnaseq/results/NGS0001.vcf
+bgzip ~/ngs_pipeline/dnaseq/results/NGS0001.vcf
+tabix -p vcf ~/ngs_pipeline/dnaseq/results/NGS0001.vcf.gz
 
 # filter the vcf using vcffilter 
-$ sudo apt install libvcflib-tools
-$ vcffilter -f "QUAL > 1" -f "QUAL / AO > 10" -f "SAF > 0" -f "SAR > 0" -f "RPR > 1" -f "RPL > 1" ~/ngs_pipeline/dnaseq/results/NGS0001.vcf.gz > ~/ngs_pipeline/dnaseq/results/NGS0001_filtered.vcf
+sudo apt install libvcflib-tools
+vcffilter -f "QUAL > 1" -f "QUAL / AO > 10" -f "SAF > 0" -f "SAR > 0" -f "RPR > 1" -f "RPL > 1" ~/ngs_pipeline/dnaseq/results/NGS0001.vcf.gz > ~/ngs_pipeline/dnaseq/results/NGS0001_filtered.vcf
 
 # 2.4 filter the vcf file for the regions in annotation.bed using bedtools 
-$ bedtools intersect -header -wa -a ~/ngs_pipeline/dnaseq/results/NGS0001_filtered.vcf -b ~/ngs_pipeline/dnaseq/data/annotation.bed > ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf
-$ bgzip ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf
-$ tabix -p vcf ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf.gz
+bedtools intersect -header -wa -a ~/ngs_pipeline/dnaseq/results/NGS0001_filtered.vcf -b ~/ngs_pipeline/dnaseq/data/annotation.bed > ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf
+bgzip ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf
+tabix -p vcf ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf.gz
 
 # 2.5 set up Annovar and download databases 
 # Register and download Annovar with link provided in email 
-$ tar -zxvf annovar.latest.tar.gz (manually upload to Openstack via FileZilla) 
-$ cd annovar
-$ chmod +x ./annotate_variation.pl
-$ ./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar knownGene humandb/
-$ ./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar refGene humandb/
-$ ./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar ensGene humandb/
-$ ./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar clinvar_20180603 humandb/
-$ ./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar exac03 humandb/
-$ ./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar dbnsfp31a_interpro humandb/
+tar -zxvf annovar.latest.tar.gz
+# manually upload to Openstack via FileZilla 
+cd annovar
+chmod +x ./annotate_variation.pl
+./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar knownGene humandb/
+./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar refGene humandb/
+./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar ensGene humandb/
+./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar clinvar_20180603 humandb/
+./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar exac03 humandb/
+./annotate_variation.pl -buildver hg19 -downdb -webfrom annovar dbnsfp31a_interpro humandb/
 
 # convert vcf to annovar input format
-$ chmod +rwx ./convert2annovar.pl
-$ ./convert2annovar.pl -format vcf4 ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf.gz > ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.avinput
+chmod +rwx ./convert2annovar.pl
+./convert2annovar.pl -format vcf4 ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.vcf.gz > ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.avinput
 
 # run annovar table function for csv output
-$ chmod +x ./table_annovar.pl
-$ chmod +x ./coding_change.pl
-$ ./table_annovar.pl ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.avinput humandb/ -buildver hg19 -out ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted -remove -protocol refGene,ensGene,clinvar_20180603,exac03,dbnsfp31a_interpro -operation g,g,f,f,f -otherinfo -nastring . -csvout
-NOTICE: Multianno output file is written to /home/ubuntu/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.hg19_multianno.csv
+chmod +x ./table_annovar.pl
+chmod +x ./coding_change.pl
+./table_annovar.pl ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.avinput humandb/ -buildver hg19 -out ~/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted -remove -protocol refGene,ensGene,clinvar_20180603,exac03,dbnsfp31a_interpro -operation g,g,f,f,f -otherinfo -nastring . -csvout
+# NOTICE: Multianno output file is written to /home/ubuntu/ngs_pipeline/dnaseq/results/NGS0001_filtered_targeted.hg19_multianno.csv
 
 # 2.5 set up snpEFF and download  # https://pcingola.github.io/SnpEff/snpeff/introduction/ 
 # https://pcingola.github.io/SnpEff/download/ # https://www.biostars.org/p/9562070/ (java newest version not compatible) # Download snpEFF (manually upload to Openstack via FileZilla) 
-$ wget https://snpeff.blob.core.windows.net/versions/snpEff_latest_core.zip
-$ unzip snpEff_latest_core.zip
-$ sudo apt install maven (190MB)
-$ java -Xmx8g -jar snpEff.jar hg19 NGS0001_filtered_targeted.vcf.gz > NGS0001_filtered_targeted.ann.vcf 
+wget https://snpeff.blob.core.windows.net/versions/snpEff_latest_core.zip
+unzip snpEff_latest_core.zip
+sudo apt install maven (190MB)
+java -Xmx8g -jar snpEff.jar hg19 NGS0001_filtered_targeted.vcf.gz > NGS0001_filtered_targeted.ann.vcf 
 
 # 2.6 alternative tools for variant calling bcftools 
-$ sudo apt install bcftools
+sudo apt install bcftools
 
-$ bcftools filter -i'QUAL > 1' -i’QUAL/AO > 10’ -i’SAF > 0’ -i’SAR > 0’ -i’RPR > 1’ -i’RPL > 1’ ~/ngs_pipeline/dnaseq/results/NGS0001.vcf.gz | bcftools stats | grep TSTV
+bcftools filter -i'QUAL > 1' -i’QUAL/AO > 10’ -i’SAF > 0’ -i’SAR > 0’ -i’RPR > 1’ -i’RPL > 1’ ~/ngs_pipeline/dnaseq/results/NGS0001.vcf.gz | bcftools stats | grep TSTV
 
 # 2.6 alternative tools for variant calling (instead of Freebayes?) 
-$ bcftools mpileup -f ~/ngs_pipeline/dnaseq/data/reference/hg19.fa ~/ngs_pipeline/dnaseq/data/aligned_data/NGS0001_sorted_filtered.bam | bcftools call -mv -Ob -o ~/ngs_pipeline/dnaseq/results/NGS0001.bcf
+bcftools mpileup -f ~/ngs_pipeline/dnaseq/data/reference/hg19.fa ~/ngs_pipeline/dnaseq/data/aligned_data/NGS0001_sorted_filtered.bam | bcftools call -mv -Ob -o ~/ngs_pipeline/dnaseq/results/NGS0001.bcf
 
 # 2.6 comment on choice of option of vcf tools and how if would affect results
 # The quality score QUAL column provided gives an estimate on how likely it is to observe a call purely by chance. Fixed-threshold filtering can be applied  # However QUAL does not include the effects of systematic biases # Difficult to tell the variants and the artefacts apart in bcftools  # Annotations produced only make indirect suggestion and an approach which works for one dataset may not work for another 
