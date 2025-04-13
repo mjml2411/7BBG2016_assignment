@@ -1,7 +1,3 @@
-# scripts
-
-7BBG2016_assignment README.md
-
 # make a directory for the DNA-seq analysis within the ngs_pipeline folder
 $ mkdir ngs_pipeline
 $ mkdir ngs_pipeline/dnaseq
@@ -185,3 +181,4 @@ $ bcftools mpileup -f ~/ngs_pipeline/dnaseq/data/reference/hg19.fa ~/ngs_pipelin
 
 # 2.6 comment on choice of option of vcf tools and how if would affect results
 # The quality score QUAL column provided gives an estimate on how likely it is to observe a call purely by chance. Fixed-threshold filtering can be applied  # However QUAL does not include the effects of systematic biases # Difficult to tell the variants and the artefacts apart in bcftools  # Annotations produced only make indirect suggestion and an approach which works for one dataset may not work for another 
+
