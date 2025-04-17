@@ -1,0 +1,439 @@
+---
+title: "Advanced Bioinformatics 2025 assessment"
+author: "m2008486"
+date: "2025-03-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Task General R/ R Studio
+# 3.1 Using the sum() function and : operator, write an expression in the code snippet to evaluate the sum of all integers between 5 and 55. (3pt)
+x <- (5:55)
+sum(x)
+
+# 3.2 Write a function called sumfun with one input parameter, called n, that calculates the sum of all integers between 5 and n. Use the function to do the calculation for n = 10, n = 20, and n = 100 and present the results. (3pt)
+sumfun <- function (n) {sum(5:n)}
+sumfun(10)
+sumfun(20)
+sumfun(100)
+
+# 3.3 The famous Fibonacci series is calculated as the sum of the two preceding members of the sequence, where the first two steps in the sequence are 1, 1. Write an R script using a for loop to calculate and print out the first 12 entries of the Fibonacci series. (3pt)
+
+# function for calculating fibonacci of a vector with n values
+print_fibonacci <- function (n) {
+
+# the first number a is 1 and the second number b is 1
+a <- 1 
+b <- 1
+cat ("Fibonacci sequence:") 
+
+# repeat the loop for the nth number
+for (i in 1:n) {cat (a, " ")
+next_num <- a + b
+a <- b
+b <- next_num} }
+
+# return the modified vector
+number_of_entries <- 12
+print_fibonacci (number_of_entries)
+
+# 3.4 With the mtcars dataset bundled with R, use ggplot to generate a box of miles per gallon (in the variable mpg) as a function of the number of gears (in the variable gear). Use the fill aesthetic to colour bars by number of gears. (3pt)
+
+library (ggplot2)
+ggplot(data=mtcars,aes(x=as.factor(gear),y=mpg)) + geom_boxplot(aes(fill=as.factor(gear))) + ggtitle("Box plot of Miles per gallon (mpg) as a function of number of gears")
+
+# 3.5 Using the cars dataset and the function lm, fit a linear relationship between speed and breaking distance in the variable distance. What are the fitted slope and intercept of the line, and their standard errors? What are the units used for the variables in the dataset? (3pt)
+
+y <- cars$dist;
+x <- cars$speed;
+model <- lm(formula="y ~ x")
+summary(model)
+
+# Fitted slope is 3.9324
+# Intercept of the line is -17.5791
+# Standard errors (6.7584,0.4155)
+# Units used for the variables speed(x) = miles per hour(mph); distance(y) = feet
+
+data(cars)
+help(cars)
+
+# 3.6 Use ggplot to plot the data points from Task 3.5 and the linear fit. (3pt)
+
+library(ggplot2)
+
+# assign the ggplot function to the variable ggplot_c1
+ggplot_c1 <- ggplot(data=cars,aes(x=speed,y=dist)) + geom_point() + geom_smooth(method = "lm",formula="y ~ x")
+
+# make a new variable ggplot_c2 and add title, x and y labels
+ggplot_c2 <- ggplot_c1 + ggtitle("Linear plot of the relationship between speed and breaking distance") + xlab("speed(milesperhour)") + ylab("distance(feet)")
+ggplot_c2
+
+# 3.7 Again using the cars dataset, now use linear regression (lm) to estimate the average reaction time for the driver to start breaking (in seconds). To simplify matters you may assume that once breaking commences, breaking distance is proportional to the square of the speed. Explain the steps in your analysis. Do you get reasonable results? Finally, use ggplot to plot the data points and the fitted relationship. (7pt)
+
+# assign the breaking distance in miles to the variable "dist_m" and convert to units in feet by multiplying 0.000189394
+dist_m <- cars$dist* 0.000189394
+
+# make a variable "speed_mph" speed in miles per hour where breaking distance is proportional to the square of speed
+speed_mph <- cars$speed^2
+
+# create the linear model
+lm(formula=dist_m ~ speed_mph)
+
+# slope is half the reaction time from the model
+reaction_time <- 2.443e-05*2
+
+# convert reaction time from hours to seconds
+reaction_time_sec <- reaction_time/3600
+reaction_time_sec
+
+# the answer of the average reaction time is 1.357222e-08 seconds, which is not a reasonable result as this indicates the estimated reaction time of the driver is 0.00000001357222 seconds 
+
+library(ggplot2) 
+ggplot_r1 <- ggplot(cars,aes(speed_mph,dist_m)) + geom_point()
+ggplot_r2 <- ggplot_r1 + geom_smooth(method = "lm", formula = "dist_m ~ speed_mph") + ggtitle("Linear regression model between breaking distance and speed")
+
+# Task RNA-seq
+install.packages("ggplot2",dependencies=TRUE)
+install.packages("rmarkdown",dependencies=TRUE)
+
+# 3.8 Read input file with count data
+all_counts <- read.csv(file = "LMS_RNAseq_short-master-2023-final/course/exercises/data/exercise1_counts.csv", row.names = 1)
+
+# Read input file with sample description
+sam_des <- read.table("LMS_RNAseq_short-master-2023-final/course/exercises/data/exercise1_sample_description.info", sep = "\t", header = TRUE)
+
+file.exists("LMS_RNAseq_short-master-2023-final/course/exercises/data /exercise1_sample_description.info")
+
+# 3.9 Create col_data and check dimensions
+# Explore data
+head(all_counts)
+dim(all_counts)
+class(all_counts)
+
+# Explore data
+head(sam_des)
+dim(sam_des)
+class(sam_des)
+
+# Prepare data for DESeq
+col_data <- data.frame(Sample = sam_des$sample,
+                  Condition = sam_des$condition,
+                  Batch = sam_des$batch)
+
+col_data
+# Store data as factors
+col_data$Sample <- as.factor(col_data$Sample)
+col_data$Condition <- as.factor(col_data$Condition)
+col_data$Batch <- as.factor(col_data$Batch)
+
+# Check dimensions
+all(colnames(all_counts) == sam_des$Sample)
+
+str(all_counts)
+str(col_data)
+
+# 3.10 Construct DESeqDataSet object using count data and sample description
+install.packages("BiocManager")
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DESeq2")
+
+# Load DESeq2 library
+library(DESeq2)
+
+# Build DESeq dataset
+# ~1 means no design formula
+dds <- DESeqDataSetFromMatrix(countData = all_counts, 
+                              colData = col_data, design = ~Condition)
+
+# Normalization in DESeq
+print("Differential Expression analysis: DESeq2")
+# Apply DESeq normalization
+dds <- DESeq(dds)
+
+# 3.11. Perform rlog and VST transformation on the data
+# Regularized log transformation
+rld <- rlog(dds)
+class(rld)
+
+# Get rld in count format
+rld_counts <- assay(rld)
+class(rld_counts)
+
+# Regularized log transformation
+vsd <- varianceStabilizingTransformation(dds)
+class(vsd)
+
+# Get rld in count format
+vsd_counts <- assay(vsd)
+class(vsd_counts)
+
+# 3.12. Draw a heatmap of count matrix based on the top 40 highly expressed genes using rlog and VST data
+# Load pheatmap library
+BiocManager::install("pheatmap")(force = TRUE)
+
+install.packages("pheatmap")("force = TRUE")
+
+library(pheatmap)
+
+# Get dds normalized counts
+dds_counts <- counts(dds, normalized = TRUE)
+head(dds_counts)
+
+# Get normalized counts - 40 higher values
+select <- order(rowMeans(dds_counts), decreasing = TRUE)[1:40]
+head(select)
+
+# Heatmap of the rlog transformed data
+pheatmap(assay(rld)[select, ])
+
+# Heatmap of the vst transformed data
+pheatmap(assay(vsd)[select, ])
+
+# 3.13. Generate a SDM to see the clustering of count data
+# Compute SDM from rlog transformed data
+sample_dist <- dist(t(assay(rld)))
+class(sample_dist)
+
+# Get SDM in matrix form
+sdm <- as.matrix(sample_dist)
+class(sdm)
+
+# Load library
+library("RColorBrewer")
+
+# Add row names for clear plot
+rownames(sdm) <- rld$Group
+colnames(sdm) <- NULL
+
+# Add colors
+colors <- colorRampPalette(rev(brewer.pal(9, "Blues")))(255)
+
+# Plot heatmap
+pheatmap(sdm,
+         clustering_distance_rows = sample_dist,
+         clustering_distance_cols = sample_dist,
+         col = colors)
+         
+# 3.14. Perform the Principal Component Analysis using rlog method and find out the % significance values of first two principal components
+# PCA plot on our rld transformed data
+plotPCA(rld, intgroup = "Condition")
+
+# The % significance value of PC1 is 70% variance.
+# The % significance value of PC2 is 13% variance. 
+
+# Save figure
+library(ggplot2)
+ggsave(file = "figures/PCA_plot_rld.png")
+
+# 3.15. Repeat the PCA, this time using VST method and compare the plots with the ones obtained using rlog method.
+# PCA plot on our vsd transformed data
+plotPCA(vsd, intgroup = "Condition")
+
+# The % significance value of PC1 is 69% variance, similar to rlog.
+# The % significance value of PC2 is 14% variance, similar to rlog. 
+
+# Save figure
+library(ggplot2)
+ggsave(file = "figures/PCA_plot_vst.png")
+
+# Task ChIP-seq 
+# **Session -> Set Working Directory -> Choose Directory**
+install.packages("ChIPQC")
+install.packages("DiffBind")
+
+install.packages("amap")
+library(amap)
+
+install.packages("mvtnorm")
+library(mvtnorm)
+
+BiocManager::install("ChIPQC")
+
+BiocManager::install("ChIPQC")('force = TRUE')
+
+warnings()
+
+library(DiffBind)
+
+library(ChIPQC)
+
+library(DESeq2)
+
+# 3.16. Read in the two Myc Mel peakset replicates and create the common peakset as we did for our previous exercise
+# Importing peaks
+peakfile <- "LMS_ChIPseq_short-master-2023-final/course/data/MacsPeaks/mycmelrep1_peaks.xls"
+macsPeaks_DF <- read.delim(peakfile,comment.char="#")
+macsPeaks_DF[1:2,]
+
+arrange(macsPeaks_DF,desc(fold_enrichment)) 
+
+library(GenomicRanges)
+
+macsPeaks_GR <- GRanges(
+ seqnames=macsPeaks_DF[,"chr"],
+ IRanges(macsPeaks_DF[,"start"],
+         macsPeaks_DF[,"end"]))
+
+macsPeaks_GR
+
+seqnames(macsPeaks_GR)
+ranges(macsPeaks_GR)
+
+mcols(macsPeaks_GR) <- macsPeaks_DF[,c("abs_summit", "fold_enrichment")]
+macsPeaks_GR
+
+names(macsPeaks_GR) <- macsPeaks_DF[,"name"]
+
+# Create the common peakset
+firstPeakSet <- ChIPQC:::GetGRanges("LMS_ChIPseq_short-master-2023-final/course/data/MacsPeaks/mycmelrep1_peaks.xls", sep="\t", simple=F)
+
+secondPeakSet <- ChIPQC:::GetGRanges("LMS_ChIPseq_short-master-2023-final/course/data/MacsPeaks/mycmelrep2_peaks.xls", sep="\t", simple=F)
+
+OnlyfirstPeakSet <- firstPeakSet[!firstPeakSet %over% secondPeakSet]
+firstANDsecondPeakSets <- firstPeakSet[firstPeakSet %over% secondPeakSet]
+
+length(OnlyfirstPeakSet)
+length(firstANDsecondPeakSets)
+
+# 3.17. Now we can rank them by their fold enrichment, select the top 500 peaks and resize these peaks to 200bp around centre
+
+foldEnrichment <- firstPeakSet$fold_enrichment
+# or foldEnrichment <- firstPeakSet[,"fold_enrichment"]
+foldEnrichment[1:10]
+
+FirstOnly_FE <- log2(OnlyfirstPeakSet$fold_enrichment)
+FirstAndSecond_FE <- log2(firstANDsecondPeakSets$fold_enrichment)
+
+boxplot(FirstOnly_FE,
+        FirstAndSecond_FE,
+        names=c("Only_in_First","Common_to_first_second"),
+        ylab="log2 Fold_Enrichment")
+
+sort(firstANDsecondPeakSets$fold_enrichment,decreasing=TRUE)
+
+FirstANDSecond_FE_set <- head(sort(firstANDsecondPeakSets$fold_enrichment,decreasing=TRUE),n=500)
+
+length(FirstANDSecond_FE_set)
+
+# number of peaks in first replicate overlapping second is different from number of peaks in second replicate overlapping first 
+firstANDsecondPeakSets <- firstPeakSet[firstPeakSet %over% secondPeakSet]
+secondANDfirstPeakSets <- secondPeakSet[secondPeakSet %over% firstPeakSet]
+
+length(firstANDsecondPeakSets)
+length(secondANDfirstPeakSets)
+
+# reduce peaksets to single non-overlapping peakset
+allPeaks <- c(firstPeakSet,secondPeakSet)
+allPeaksReduced <- reduce(allPeaks)
+
+length(allPeaks)
+length(allPeaksReduced)
+
+# using top 500 peaks ranked by FE
+firstANDsecondPeakSets
+
+head(sort(firstANDsecondPeakSets$fold_enrichment,decreasing=TRUE),n=500)
+
+library(dplyr)
+
+# finding common peaks
+
+commonPeaks <- firstANDsecondPeakSets[FirstANDSecond_FE_set]
+
+print(commonPeaks)
+
+length(commonPeaks)
+
+head(commonPeaks,10)
+
+# peakset resized to a common length 200bp 
+
+commonPeaks <- resize(commonPeaks,200,fix="center")
+
+commonPeaks[1:4,]
+
+commonPeaks
+
+# 3.18. Extract the sequences underneath the file and write them to FASTA file in you working directory. Inspect the file in notepad
+# Extracting sequences under regions
+library(BSgenome)
+
+BiocManager::install("BSgenome.Mmusculus.UCSC.mm9")
+
+library(BSgenome.Mmusculus.UCSC.mm9)
+
+genome <- BSgenome.Mmusculus.UCSC.mm9
+seqlevelsStyle(commonPeaks) <- "UCSC"
+
+BiocManager::install("GenomicRanges",dependencies = TRUE)
+
+warnings()
+
+library(GenomicRanges)
+
+library(Biostrings)
+
+showMethods("getSeq")
+
+commonPeaksSequences <- getSeq(genome,GRanges(commonPeaks))
+
+names(commonPeaksSequences) <- paste0("peak_",seqnames(commonPeaks),"_",
+                                         start(commonPeaks),
+                                         "-",
+                                         end(commonPeaks))
+
+commonPeaksSequences[1:2,]
+
+# to generate unique sequence identifiers for Meme-ChIP report
+unique_cps <- unique(commonPeaksSequences)
+
+# writing to FASTA file
+writeXStringSet(unique_cps,file="consensusPeaks.fa")
+# file "consensusPeaks.fa" saved in working directory and opens on notepad
+
+
+# 3.19. Upload the sequences to Meme-ChIP and report the results when complete
+# uploaded to http://meme-suite.org/tools/meme-chip
+
+# Please wait. Your MEME-ChIP job is now running. Further details may be available below. You may bookmark this page or use the Recent Jobs menu at the left to access your job's results.
+# https://meme-suite.org/meme/info/status?service=MEMECHIP&id=appMEMECHIP_5.5.71743896756469-1420192981
+
+# Status Messages
+# Arguments ok. Starting MEME-ChIP
+# firstANDsecondPeakSets was uploaded with sequence count 29183
+# 27 clusters found, 19 clusters are centrally enriched, 14 clusters are found to have multiple motifs in motif discovery 
+
+# FirstANDSecond_FE_set with top 500 peaks fold enrichment ranked was uploaded as another attempt with sequence count 54
+# no clusters were found
+
+
+
+
+
+
